@@ -15,7 +15,7 @@ import { CheckboxComponent } from '../checkbox/checkbox.component';
       (click)="edit.emit(task)">
       <app-checkbox
         [checked]="task.isCompleted"
-        (toggled)="toggleComplete.emit(task)"
+        (toggled)="onToggleComplete($event)"
         (click)="$event.stopPropagation()" />
       <div class="flex-1 min-w-0">
         <p [class]="task.isCompleted ? 'line-through text-slate-400' : 'font-medium text-slate-800'">
@@ -53,5 +53,10 @@ export class TaskCardComponent {
   onDeleteClick(event: MouseEvent) {
     event.stopPropagation();
     this.delete.emit(this.task);
+  }
+
+  onToggleComplete(event: boolean) {
+    if (event === this.task.isCompleted) return;
+    this.toggleComplete.emit(this.task);
   }
 }

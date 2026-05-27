@@ -1,8 +1,11 @@
 import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { tap } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { map, tap } from 'rxjs/operators';
 import { AuthResponse, LoginRequest, RegisterRequest, User } from '../models/auth.models';
+
+export const ACCESS_TOKEN_LIFETIME_MINUTES = 60;
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -42,9 +45,15 @@ export class AuthService {
   }
 
   loadCurrentUser() {
-    return this.http.get<User>(`${this.apiUrl}/me`).pipe(
-      tap(user => this.currentUser.set(user))
-    );
+    return this.http.get<User>(`${this.apiUrl}/me`).pipe(tap(user => this.currentUser.set(user)));
+  }
+
+  ensureSession(): Observable<void> {
+    this.restoreSession();
+    if (this.isLoggedIn()) {
+      return of(undefined);
+    }
+    return this.refresh().pipe(map(() => undefined));
   }
 
   getAccessToken(): string | null {
@@ -60,18 +69,26 @@ export class AuthService {
 
   private setSession(response: AuthResponse) {
     this.accessToken = response.accessToken;
-    this.tokenExpiry = new Date(response.expiresAt);
+    this.tokenExpiry = this.expiryFromAccessToken(response.accessToken);
     sessionStorage.setItem('access_token', response.accessToken);
-    sessionStorage.setItem('token_expiry', response.expiresAt);
+    sessionStorage.setItem('token_expiry', this.tokenExpiry.toISOString());
   }
 
   restoreSession() {
     const token = sessionStorage.getItem('access_token');
-    const expiry = sessionStorage.getItem('token_expiry');
-    if (token && expiry) {
-      this.accessToken = token;
-      this.tokenExpiry = new Date(expiry);
+    if (!token) {
+      return;
     }
+    this.accessToken = token;
+    const storedExpiry = sessionStorage.getItem('token_expiry');
+    const jwtExpiry = this.expiryFromAccessToken(token);
+    if (storedExpiry) {
+      const parsed = new Date(storedExpiry);
+      this.tokenExpiry = Number.isNaN(parsed.getTime()) ? jwtExpiry : jwtExpiry;
+    } else {
+      this.tokenExpiry = jwtExpiry;
+    }
+    sessionStorage.setItem('token_expiry', this.tokenExpiry.toISOString());
   }
 
   clearSession() {
@@ -81,5 +98,17 @@ export class AuthService {
     sessionStorage.removeItem('access_token');
     sessionStorage.removeItem('token_expiry');
     this.router.navigate(['/login']);
+  }
+
+  private expiryFromAccessToken(accessToken: string): Date {
+    try {
+      const payload = accessToken.split('.')[1];
+      const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+      const json = atob(base64);
+      const { exp } = JSON.parse(json) as { exp: number };
+      return new Date(exp * 1000);
+    } catch {
+      return new Date(Date.now() + ACCESS_TOKEN_LIFETIME_MINUTES * 60 * 1000);
+    }
   }
 }

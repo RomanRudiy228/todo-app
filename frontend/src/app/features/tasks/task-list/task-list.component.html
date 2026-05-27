@@ -34,7 +34,7 @@
           <app-search-bar
             class="flex-1 min-w-[200px]"
             [(ngModel)]="search"
-            (searchChange)="onSearchChange()"
+            (searchChange)="onSearchChange($event)"
             placeholder="Search tasks..." />
 
           <app-select
@@ -54,6 +54,10 @@
 
           <app-button variant="secondary" (click)="openCreateModal()">+ Add task</app-button>
         </div>
+
+        @if (error) {
+          <div class="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">{{ error }}</div>
+        }
 
         @if (loading && tasks.length === 0) {
           <app-spinner label="Loading tasks..." />
@@ -94,3 +98,11 @@
   [categories]="categories"
   (save)="onModalSave($event)"
   (close)="modalOpen = false" />
+
+<app-confirm-dialog
+  [open]="deleteConfirmOpen"
+  title="Delete task"
+  [message]="'Delete “' + (taskToDelete?.title ?? '') + '”? This cannot be undone.'"
+  confirmLabel="Delete"
+  (confirm)="confirmDeleteTask()"
+  (cancel)="cancelDelete()" />

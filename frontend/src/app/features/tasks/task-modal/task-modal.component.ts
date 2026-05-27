@@ -74,7 +74,7 @@ export class TaskModalComponent implements OnChanges {
     this.save.emit({
       title: v.title,
       description: v.description || undefined,
-      dueDate: v.dueDate ? new Date(v.dueDate).toISOString() : undefined,
+      dueDate: v.dueDate ? this.toUtcMidnightIso(v.dueDate) : undefined,
       categoryId: v.categoryId || undefined,
       isCompleted: v.isCompleted ?? false,
     });
@@ -96,5 +96,11 @@ export class TaskModalComponent implements OnChanges {
       if (key !== 'title') continue;
       titleCtrl?.setErrors({ ...(titleCtrl.errors ?? {}), zod: issue.message });
     }
+  }
+
+  private toUtcMidnightIso(dateInput: string): string {
+    const [y, m, d] = dateInput.split('-').map(Number);
+    const utc = new Date(Date.UTC(y, (m ?? 1) - 1, d ?? 1, 0, 0, 0));
+    return utc.toISOString();
   }
 }

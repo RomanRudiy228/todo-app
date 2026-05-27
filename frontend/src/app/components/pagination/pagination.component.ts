@@ -9,31 +9,29 @@ import { LucideChevronLeft, LucideChevronRight } from '@lucide/angular';
   template: `
     @if (totalPages > 0) {
       <nav class="flex items-center justify-center gap-4" aria-label="Pagination">
-        @if (canGoPrev) {
-          <button
-            type="button"
-            (click)="prev.emit()"
-            [disabled]="loading"
-            class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-indigo-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Previous page">
-            <svg lucideChevronLeft class="w-5 h-5"></svg>
-          </button>
-        }
+        <button
+          type="button"
+          (click)="prev.emit()"
+          [disabled]="!canGoPrev || loading"
+          [class.invisible]="!canGoPrev"
+          class="p-2 w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-indigo-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Previous page">
+          <svg lucideChevronLeft class="w-5 h-5"></svg>
+        </button>
 
         <span class="text-sm font-medium text-slate-700 min-w-[4.5rem] text-center tabular-nums">
           {{ page }} / {{ totalPages }}
         </span>
 
-        @if (canGoNext) {
-          <button
-            type="button"
-            (click)="next.emit()"
-            [disabled]="loading"
-            class="p-2 rounded-lg text-slate-600 hover:bg-slate-100 hover:text-indigo-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-            aria-label="Next page">
-            <svg lucideChevronRight class="w-5 h-5"></svg>
-          </button>
-        }
+        <button
+          type="button"
+          (click)="next.emit()"
+          [disabled]="!canGoNext || loading"
+          [class.invisible]="!canGoNext"
+          class="p-2 w-9 h-9 flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-indigo-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          aria-label="Next page">
+          <svg lucideChevronRight class="w-5 h-5"></svg>
+        </button>
       </nav>
     }
   `,

@@ -51,6 +51,6 @@ public class TokenService : ITokenService
     public DateTime GetAccessTokenExpiry()
     {
         var minutes = int.Parse(_configuration["Jwt:AccessTokenMinutes"] ?? "60");
-        return DateTime.UtcNow.AddMinutes(minutes);
+        return DateTime.SpecifyKind(DateTime.UtcNow.AddMinutes(minutes), DateTimeKind.Utc);
     }
 }
