@@ -1,4 +1,4 @@
-# Todo App (Microsoft To-Do style)
+# Todo App 
 
 Full-stack task manager with categories, JWT auth + refresh tokens, search/filter, and infinite scroll.
 
