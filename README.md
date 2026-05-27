@@ -13,19 +13,7 @@ Full-stack task manager with categories, JWT auth + refresh tokens, search/filte
 - [Node.js 20+](https://nodejs.org/)
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (for PostgreSQL)
 
-## Important: folder name `to-do(c#)`
-
-The **`#` character in the path** breaks Angular/Vite dev server (MIME type errors in browser).
-
-**Use the junction path** (already created on this machine):
-
-```
-E:\projects\todo-app   →   E:\projects\to-do(c#)
-```
-
-Run **frontend** only from `E:\projects\todo-app\frontend`, not from `to-do(c#)\frontend`.
-
-Or rename the project folder to e.g. `todo-app` (no `#` or `()`).
+Run **frontend** from `E:\projects\todo-app\frontend`.
 
 ## Quick start 
 
@@ -61,8 +49,6 @@ npm start
 ```
 
 App: http://localhost:4200
-
-> Do **not** use `ng serve` from `to-do(c#)\frontend` — Vite fails on `#` in the path.
 
 ## Features
 
