@@ -57,6 +57,12 @@ export class AuthService {
   }
 
   getAccessToken(): string | null {
+    if (this.accessToken && this.tokenExpiry) {
+      if (this.tokenExpiry > new Date()) {
+        return this.accessToken;
+      }
+    }
+
     if (this.accessToken && this.tokenExpiry && this.tokenExpiry > new Date()) {
       return this.accessToken;
     }
@@ -84,7 +90,7 @@ export class AuthService {
     const jwtExpiry = this.expiryFromAccessToken(token);
     if (storedExpiry) {
       const parsed = new Date(storedExpiry);
-      this.tokenExpiry = Number.isNaN(parsed.getTime()) ? jwtExpiry : jwtExpiry;
+      this.tokenExpiry = Number.isNaN(parsed.getTime()) ? jwtExpiry : parsed;
     } else {
       this.tokenExpiry = jwtExpiry;
     }
@@ -100,15 +106,26 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
-  private expiryFromAccessToken(accessToken: string): Date {
+  private decodeJwtExpSeconds(accessToken: string): number | null {
     try {
       const payload = accessToken.split('.')[1];
       const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
       const json = atob(base64);
       const { exp } = JSON.parse(json) as { exp: number };
-      return new Date(exp * 1000);
+      return typeof exp === 'number' ? exp : null;
     } catch {
-      return new Date(Date.now() + ACCESS_TOKEN_LIFETIME_MINUTES * 60 * 1000);
+      return null;
     }
+  }
+
+  private expiryFromAccessToken(accessToken: string): Date {
+    try {
+      const expSeconds = this.decodeJwtExpSeconds(accessToken);
+      if (expSeconds) {
+        return new Date(expSeconds * 1000);
+      }
+    } catch {}
+
+    return new Date(Date.now() + ACCESS_TOKEN_LIFETIME_MINUTES * 60 * 1000);
   }
 }

@@ -24,6 +24,7 @@ public class TokenService : ITokenService
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!));
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expiryMinutes = int.Parse(jwtSettings["AccessTokenMinutes"] ?? "60");
+        var expiresAtUtc = DateTime.UtcNow.AddMinutes(expiryMinutes);
 
         var claims = new[]
         {
@@ -36,7 +37,7 @@ public class TokenService : ITokenService
             issuer: jwtSettings["Issuer"],
             audience: jwtSettings["Audience"],
             claims: claims,
-            expires: DateTime.UtcNow.AddMinutes(expiryMinutes),
+            expires: expiresAtUtc,
             signingCredentials: credentials);
 
         return new JwtSecurityTokenHandler().WriteToken(token);
@@ -51,6 +52,7 @@ public class TokenService : ITokenService
     public DateTime GetAccessTokenExpiry()
     {
         var minutes = int.Parse(_configuration["Jwt:AccessTokenMinutes"] ?? "60");
-        return DateTime.SpecifyKind(DateTime.UtcNow.AddMinutes(minutes), DateTimeKind.Utc);
+        var expiresAtUtc = DateTime.UtcNow.AddMinutes(minutes);
+        return DateTime.SpecifyKind(expiresAtUtc, DateTimeKind.Utc);
     }
 }
