@@ -1,0 +1,96 @@
+<div class="min-h-screen flex flex-col">
+  <header class="bg-white border-b border-slate-200 px-6 py-4 flex items-center justify-between">
+    <h1 class="text-xl font-bold text-slate-800">Todos</h1>
+    <div class="flex items-center gap-4">
+      @if (auth.currentUser(); as user) {
+        <span class="text-sm text-slate-600">{{ user.email }}</span>
+      }
+      <button
+        type="button"
+        (click)="logout()"
+        class="p-2 rounded-lg text-slate-600 hover:text-red-600 hover:bg-red-50 cursor-pointer transition-colors"
+        aria-label="Logout"
+        title="Logout">
+        <svg lucideDoorOpen class="w-5 h-5"></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden">
+    <app-category-list
+      [categories]="categories"
+      [selectedCategoryId]="selectedCategoryId"
+      [showCategoryForm]="showCategoryForm"
+      [newCategoryName]="newCategoryName"
+      (select)="selectCategory($event)"
+      (delete)="onDeleteCategory($event)"
+      (add)="addCategory()"
+      (showForm)="showCategoryForm = true"
+      (newCategoryNameChange)="newCategoryName = $event" />
+
+    <main class="flex-1 p-6 overflow-y-auto">
+      <div class="max-w-3xl mx-auto">
+        <div class="flex flex-wrap gap-3 mb-6">
+          <app-search-bar
+            class="flex-1 min-w-[200px]"
+            [(ngModel)]="search"
+            (searchChange)="onSearchChange()"
+            placeholder="Search tasks..." />
+
+          <app-select
+            [(ngModel)]="filterCompleted"
+            (ngModelChange)="onFilterChange()"
+            [options]="statusOptions" />
+
+          <app-select
+            [(ngModel)]="sortBy"
+            (ngModelChange)="onFilterChange()"
+            [options]="sortByOptions" />
+
+          <app-select
+            [(ngModel)]="sortDirection"
+            (ngModelChange)="onFilterChange()"
+            [options]="sortDirectionOptions" />
+
+          <app-button variant="secondary" (click)="openCreateModal()">+ Add task</app-button>
+        </div>
+
+        @if (loading && tasks.length === 0) {
+          <app-spinner label="Loading tasks..." />
+        } @else if (tasks.length === 0) {
+          <p class="text-slate-500 text-center py-12">No tasks found. Create your first task!</p>
+        } @else {
+          <div class="flex flex-col gap-2">
+            @for (task of tasks; track task.id) {
+              <app-task-card
+                [task]="task"
+                (toggleComplete)="toggleComplete($event)"
+                (edit)="openEditModal($event)"
+                (delete)="deleteTask($event)" />
+            }
+          </div>
+
+          <div class="mt-6 flex flex-col items-center gap-3">
+            @if (loading) {
+              <app-spinner size="sm" label="Loading..." />
+            } @else if (totalPages > 1) {
+              <app-pagination
+                [page]="page"
+                [totalPages]="totalPages"
+                [loading]="loading"
+                (prev)="goToPrevPage()"
+                (next)="goToNextPage()" />
+            }
+          </div>
+        }
+      </div>
+    </main>
+  </div>
+</div>
+
+<app-task-modal
+  [open]="modalOpen"
+  [task]="editingTask"
+  [categories]="categories"
+  (save)="onModalSave($event)"
+  (close)="modalOpen = false" />

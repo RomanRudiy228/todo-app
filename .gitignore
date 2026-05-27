@@ -1,0 +1,19 @@
+# .NET
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# Node
+node_modules/
+dist/
+.angular/
+
+# IDE
+.idea/
+*.log
+
+# Env
+.env
+appsettings.*.local.json
